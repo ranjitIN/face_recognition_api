@@ -41,6 +41,9 @@ def register_Face(request:Request,format = None):
         return Response(data={"error":str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 
+
+    
+
 @api_view(['POST'])
 def recognise_face(request:Request,format = None):
     try:
@@ -58,3 +61,43 @@ def recognise_face(request:Request,format = None):
             return Response(status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response(data={"error":str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['POST'])
+def upload_image(request:Request,format = None):
+    try:
+        if(request.method == "POST"):
+            image = request.FILES.get("image")
+            personid = request.data.get("personId")
+            imageData = {
+                 "person":personid,
+                 "image":image
+            }
+            personImageSerialzer = PersonFaceImageSerialzer(data= imageData)
+            if(personImageSerialzer.is_valid()):
+                personImageSerialzer.save()
+                data = {
+                    "personId":personid,
+                    "path":personImageSerialzer.data.get("image")
+                }
+                return Response(data={"data":data},status=status.HTTP_200_OK)
+            else:
+                return Response(data="error:no person exist on this id register your face first using /registerFace")
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response(data={"error":str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])    
+def complete_training(request:Request):
+    try:
+        if(request.method == "POST"):
+            data = request.data
+            faceAiService.trainMutiplePictures(data['personid'],data['uploadedImages'])
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response(data={"error":str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+

@@ -23,7 +23,9 @@ from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('registerFace',face_services.register_Face),
-    path('recogniseFace',face_services.recognise_face)
+    path('recogniseFace',face_services.recognise_face),
+    path('uploadImage',face_services.upload_image),
+    path('completeTraining',face_services.complete_training)
     #  path('api/upload/',face_services.ImageUploadView.as_view(), name='image-upload'),
 ]
 

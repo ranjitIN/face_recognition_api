@@ -25,19 +25,19 @@ def reigister_Face(personId,imagePath:str):
     print(imagePath)
     imagePath = os.path.join(settings.MEDIA_ROOT, imagePath)
     face = load_image(imagePath)
-    if os.path.exists(faceDatasetPath):
-        # append image in dataset 
-        append_in_dataset(personId,face)
-        # find face embedings 
-        print("extractFaceEmbdings")
-        faceEmbdings, labels = extractFaceEmbdings(personId,face)
-        train_model(face_embd=faceEmbdings,labels=labels)
-    else:
-        faces = np.array([face])
-        labels = np.array([personId])
-        saveFacesInNpz(faces=faces,labels=labels)
-        faceEmbdings, labels = extractFaceEmbdings(personId,face)
-        train_model(face_embd=faceEmbdings,labels=labels)
+    faceEmbdings, labels = extractFaceEmbdingsOfaFace(personId,face)
+    train_model(face_embd=faceEmbdings,labels=labels)
+    # if os.path.exists(faceDatasetPath):
+    #     # append image in dataset 
+    #     append_in_dataset(personId,face)
+    #     # find face embedings 
+        
+    # else:
+    #     faces = np.array([face])
+    #     labels = np.array([personId])
+    #     saveFacesInNpz(faces=faces,labels=labels)
+    #     faceEmbdings, labels = extractFaceEmbdings(personId,face)
+    #     train_model(face_embd=faceEmbdings,labels=labels)
   except Exception as e:
     raise e
 
@@ -49,7 +49,7 @@ def append_in_dataset(personId,face):
   labels = np.concatenate((labels, [personId]))
   saveFacesInNpz(labels=labels,faces=faces)
 
-def extractFaceEmbdings(personId,face):
+def extractFaceEmbdingsOfaFace(personId,face):
   print("extract face")
   embedder = FaceNet()
   face_embd = embedder.embeddings([face])
@@ -65,6 +65,25 @@ def extractFaceEmbdings(personId,face):
   else:
     facesEmbdings = np.array(face_embd)
     labels = np.array([personId])
+    saveFaceEmbedingsInnpz(labels,facesEmbdings)
+    return facesEmbdings,labels
+
+def extractFaceEmbdingsOfFaces(personIds,faces):
+  print("extract face")
+  embedder = FaceNet()
+  face_embd = embedder.embeddings(faces)
+  face_embd = asarray(face_embd)
+  if os.path.exists(faceEmbedingsPath):
+    faceEmbdings_dataset = np.load(faceEmbedingsPath, allow_pickle=True)
+    facesEmbdings, labels = faceEmbdings_dataset['embds'],faceEmbdings_dataset['labels']
+    facesEmbdings = np.concatenate((facesEmbdings,face_embd))
+    labels = np.concatenate((labels,personIds))
+    print("save face embdigs")
+    saveFaceEmbedingsInnpz(labels,facesEmbdings)
+    return facesEmbdings, labels
+  else:
+    facesEmbdings = np.array(face_embd)
+    labels = np.array(personIds)
     saveFaceEmbedingsInnpz(labels,facesEmbdings)
     return facesEmbdings,labels
 
@@ -136,5 +155,23 @@ def recognise_face(image):
     return predict_name[0]
   else:
     return "unknown"
+
+def trainMutiplePictures(personId:str,imagePaths):
+  try:
+      images = []
+      labels = []
+      for imagePath in imagePaths:
+        imagePath = imagePath.replace("/media/","")
+        imagePath = os.path.join(settings.MEDIA_ROOT, imagePath)
+        if os.path.exists(imagePath):
+          face = load_image(imagePath)
+          images.append(face)
+          labels.append(personId)
+      faceEmbdings, labels = extractFaceEmbdingsOfFaces(personIds=labels,faces=images)
+      train_model(face_embd=faceEmbdings,labels=labels)
+  except Exception as e:
+    raise e
+
+  
 
 
