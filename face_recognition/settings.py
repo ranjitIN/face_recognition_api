@@ -34,6 +34,8 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'rest_framework',
     'face_recognition',
+    'drf_yasg',
+    'rest_framework_swagger',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

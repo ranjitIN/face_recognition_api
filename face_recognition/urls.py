@@ -19,13 +19,26 @@ from django.urls import path
 from face_recognition.services import face_services
 from django.conf.urls.static import static
 from django.conf import settings
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view as swagger_schema_view
+from rest_framework import permissions
+
+schema_view = swagger_schema_view(
+    openapi.Info(
+        title="Face Recognition Api",
+        default_version='v0.0.1'
+    ),
+    public=True,
+    permission_classes=[permissions.AllowAny]
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('registerFace',face_services.register_Face),
     path('recogniseFace',face_services.recognise_face),
     path('uploadImage',face_services.upload_image),
-    path('completeTraining',face_services.complete_training)
+    path('completeTraining',face_services.complete_training),
+    path('swagger',schema_view.with_ui('swagger',cache_timeout = 0),name = 'swagger-schema')
     #  path('api/upload/',face_services.ImageUploadView.as_view(), name='image-upload'),
 ]
 
